@@ -17,8 +17,8 @@
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run check",
-    "eslint-test": "eslint './src/*.ts'",
-    "eslint-fix": "eslint --fix './src/*.ts'",
+    "eslint-test": "eslint src/**/*.ts",
+    "eslint-fix": "eslint --fix src/**/*.ts",
     "prettier-test": "prettier --check src/**/*.ts",
     "prettier-fix": "prettier --write src/**/*.ts",
     "lint-tests": "npm run eslint-test;npm run prettier-test",
@@ -44,6 +44,8 @@
     "@types/mongodb": "^3.5.20",
     "@types/node": "^14.0.6",
     "@types/webpack": "^4.41.15",
+    "@types/ws": "^7.2.5",
+    "bufferutil": "^4.0.1",
     "concurrently": "^5.2.0",
     "gts": "^2.0.2",
     "minimist": "^1.2.5",
@@ -52,8 +54,9 @@
     "ts-loader": "^7.0.5",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.3",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
+    "utf-8-validate": "^5.0.2",
+    "webpack-cli": "^3.3.11",
+    "ws": "^7.3.0"
   },
   "dependencies": {
     "@types/connect-flash": "0.0.35",
@@ -62,6 +65,7 @@
     "@types/method-override": "0.0.31",
     "@types/mongoose": "^5.7.21",
     "@types/passport": "^1.0.3",
+    "mongodb": "^3.5.8",
     "@types/passport-local-mongoose": "^4.0.13",
     "@types/socket.io": "^2.1.8",
     "body-parser": "^1.19.0",
@@ -82,6 +86,7 @@
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^6.0.1",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "webpack": "^4.43.0"
   }
 }

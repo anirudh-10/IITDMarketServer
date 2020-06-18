@@ -168,14 +168,14 @@ router.post(
   async (req: express.Request, res: express.Response) => {
     try {
       // get data from form and add to courses array
-      const newItem: Record<string, any> = {
+      const newItem: Record<string, unknown> = {
         title: req.body.title,
         image: req.body.image,
         description: req.body.description,
         seller: req.user,
         price: req.body.price,
         tag: req.body.tag,
-        userIsAnonymous: req.body.anonymous,
+        userIsAnonymous: Boolean(req.body.anonymous),
         category: req.body.category,
         ApproxTime: {
           month: req.body.month,
@@ -230,7 +230,7 @@ router.put(
       req.item.seller = req.user;
       req.item.price = req.body.price;
       req.item.tag = req.body.tag;
-      req.item.userIsAnonymous = req.body.anonymous;
+      req.item.userIsAnonymous = Boolean(req.body.anonymous);
       req.item.category = req.body.category;
       req.item.ApproxTime = {
         month: req.body.month,

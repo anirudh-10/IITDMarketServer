@@ -16,7 +16,7 @@ router.get('/:id', async (req: express.Request, res: express.Response) => {
       .populate('reviews')
       .exec();
     const foundItem = await Item.find({
-      $and: [{seller: foundUser}, {userIsAnonymous: true}],
+      $and: [{seller: foundUser}, {userIsAnonymous: false}],
     }).exec();
     if (req.user || req.user.id !== req.params.id) {
       await foundUser.depopulate('chats').execPopulate();
@@ -87,7 +87,8 @@ router.put(
   async (req: express.Request, res: express.Response) => {
     try {
       const user = await User.findById(req.params.id).exec();
-      if (req.user._id !== user._id || req.user.isAdmin) {
+      if (!user._id.equals(req.user._id) || !req.user.isAdmin) {
+        console.log(req.user._id !== user._id, req.user._id, user._id);
         throw error('invalid user');
       }
       user.avatar = req.body.avatar;

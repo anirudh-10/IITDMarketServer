@@ -1,11 +1,11 @@
 import path from 'path';
-import webpack = require('webpack');
+import webpack from 'webpack';
 
 const config: webpack.Configuration = {
   mode: 'production',
   entry: './src/server.ts',
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'build'),
     filename: 'bundle.js',
     publicPath: '',
   },
@@ -22,6 +22,9 @@ const config: webpack.Configuration = {
     extensions: ['.ts', '.js', '.d.ts', '.tsx'],
   },
   target: 'node',
+  externals: {
+    uws: 'uws',
+  },
   plugins: [new webpack.ContextReplacementPlugin(/.*/)],
 };
 

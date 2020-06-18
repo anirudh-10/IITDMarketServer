@@ -23,6 +23,7 @@ import userReviewRoutes from './routes/userReview';
 import userRoutes from './routes/users';
 import moment from 'moment';
 import cors from 'cors';
+import './routes/chat';
 
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useFindAndModify', false);
@@ -32,8 +33,8 @@ mongoose.set('useUnifiedTopology', true);
 // assign mongoose promise library and connect to database
 mongoose.Promise = global.Promise;
 
-const databaseUri = process.env.MONGODB_URI || 'mongodb://localhost/iitd';
-
+const databaseUri =
+  process.env.MONGODB_URI || 'mongodb://localhost:27017/iitd?replicaSet=rs0';
 mongoose
   .connect(databaseUri)
   .then(() => console.log('Database connected'))
@@ -75,8 +76,7 @@ app.use(
     res.locals.currentUser = req.user;
     if (req.user) {
       try {
-        const changeStream = await User.watch([{$match: {}}]);
-        changeStream.on('change', change => console.log(change));
+        // console.log(req.user);
         const user = await User.findById(req.user._id)
           .populate('notifs', null, {isRead: false})
           .exec();

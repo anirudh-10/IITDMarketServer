@@ -10,9 +10,9 @@ import events from 'events';
 import _ from 'lodash';
 
 const eventEmitter = new events.EventEmitter();
-const io = server(5000);
-const userStack: Record<any, any> = {};
-const userSocket: Record<any, any> = {};
+const io = server();
+const userStack: Record<string, unknown> = {};
+const userSocket: Record<string, string> = {};
 const ioChat = io.of('/chat');
 let setRoom: (roomId: string) => void, gUsername: string;
 let gRoom: string;
@@ -26,7 +26,11 @@ const sendUserStack = () => {
   }
   ioChat.emit('onlineStack', userStack);
 };
-const oldChats = (result: Record<any, any>, username: string, room: string) => {
+const oldChats = (
+  result: Record<string, unknown>,
+  username: string,
+  room: string
+) => {
   ioChat.to(userSocket[username]).emit('oldChats', {
     result: result,
     room: room,
