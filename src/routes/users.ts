@@ -7,7 +7,6 @@ import Message from '../models/message';
 import '../models/review';
 import '../models/notification';
 import middleware from '../middleware';
-import {error} from 'console';
 
 //User Profile
 router.get('/:id', async (req: express.Request, res: express.Response) => {
@@ -15,10 +14,8 @@ router.get('/:id', async (req: express.Request, res: express.Response) => {
     const foundUser = await User.findById(req.params.id)
       .populate('reviews')
       .exec();
-    const foundItem = await Item.find({
-      $and: [{seller: foundUser}, {userIsAnonymous: false}],
-    }).exec();
-    if (req.user || req.user.id !== req.params.id) {
+    const foundItem = await Item.find({seller: foundUser}).exec();
+    if (req.user || !req.user.id.equals(req.params.id)) {
       await foundUser.depopulate('chats').execPopulate();
     }
     res.json({user: foundUser, item: foundItem});
@@ -53,9 +50,7 @@ router.put(
       await user.save();
       res.send();
     } catch (err) {
-      console.log(err);
-      req.flash('error', err.message);
-      res.status(500).send('back');
+      res.status(500).send(err.message);
     }
   }
 );
@@ -72,11 +67,9 @@ router.put(
         );
       }
       await user.save();
-      res.send('back');
+      res.send();
     } catch (err) {
-      console.log(err);
-      req.flash('error', err.message);
-      res.status(500).send('back');
+      res.status(500).send(err.message);
     }
   }
 );
@@ -89,7 +82,7 @@ router.put(
       const user = await User.findById(req.params.id).exec();
       if (!user._id.equals(req.user._id) || !req.user.isAdmin) {
         console.log(req.user._id !== user._id, req.user._id, user._id);
-        throw error('invalid user');
+        throw new Error('invalid user');
       }
       user.avatar = req.body.avatar;
       user.contact_number = req.body.contactNumber;
@@ -103,9 +96,7 @@ router.put(
       req.login(user, () => {});
       res.send('Done');
     } catch (err) {
-      console.log(err);
-      req.flash('error', err.message);
-      res.status(500).send('back');
+      res.status(500).send(err.message);
     }
   }
 );

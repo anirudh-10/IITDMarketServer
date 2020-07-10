@@ -65,6 +65,8 @@ const UserSchema = new mongoose.Schema(
     folCategory: [
       {
         type: String,
+        enum: ['GENERAL', 'COOLER', 'LAPTOP', 'CYCLE', 'MATTRESS'],
+        trim: true,
       },
     ],
   },

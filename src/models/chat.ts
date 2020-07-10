@@ -7,6 +7,7 @@ export interface MChat extends mongoose.Document {
   item: {title: string; _id: string};
   messages: MMessage[];
   active: boolean;
+  user2Anonymous: boolean;
 }
 
 const chatSchema = new mongoose.Schema(
@@ -33,14 +34,11 @@ const chatSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    user2Anonymous: Boolean,
   },
   {
     timestamps: true,
   }
 );
-
-// const ArrLen = (val) => val.length === 2
-
-// chatSchema.path('users').validate(ArrLen, '{PATH} exceeds length');
 
 export default mongoose.model<MChat>('Chat', chatSchema);

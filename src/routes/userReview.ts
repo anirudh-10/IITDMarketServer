@@ -14,10 +14,9 @@ router.get('/', (req: express.Request, res: express.Response) => {
     })
     .exec((err, user) => {
       if (err || !user) {
-        req.flash('error', err.message);
         res.status(500).send(err.message);
       }
-      res.status(200).json(user);
+      res.status(200).json(user.reviews);
     });
 });
 
@@ -35,8 +34,10 @@ router.post(
         .exec();
       const review = await Review.create(req.body.review);
       //add author username/id and associated course to the review
-      review.author = req.user;
-      review.user = user;
+      review.author.username = req.user.username;
+      review.author._id = req.user._id;
+      review.user.username = user.username;
+      review.user._id = user._id;
       //save review
       await review.save();
       user.reviews.push(review);
@@ -45,17 +46,15 @@ router.post(
       //save course
       const newNotification = {
         target: user._id,
-        message: 'created a new review',
+        message: 'Review has been added successfully',
         isItem: false,
       };
       const notification = await Notification.create(newNotification);
       user.notifs.push(notification);
       await user.save();
-      req.flash('success', 'Your review has been successfully added.');
-      res.send('/users/' + req.params.id);
+      res.send('OK');
     } catch (err) {
       console.log(err);
-      req.flash('error', err.message);
       res.send(500).status(err.message);
     }
   }
@@ -83,20 +82,21 @@ router.put(
       await Review.findByIdAndUpdate(req.params.review_id, req.body.review, {
         new: true,
       }).exec();
-      const user = await User.findById(req.params.id).exec();
+      const user = await User.findById(req.params.id)
+        .populate('reviews')
+        .exec();
       // recalculate course average
       user.rating = calculateAverage(user.reviews);
       //save changes
       const newNotification = {
         targetSlug: user._id,
-        message: 'updated a review',
+        message: 'Review has been updated successfully',
         isItem: false,
       };
       const notification = await Notification.create(newNotification);
       user.notifs.push(notification);
       await user.save();
-      req.flash('success', 'Your review was successfully edited.');
-      res.send('/users/' + user.id);
+      res.send(user.reviews);
     } catch (err) {
       res.status(500).send(err.message);
     }
@@ -121,14 +121,13 @@ router.delete(
       user.rating = calculateAverage(user.reviews);
       const newNotification = {
         target: user._id,
-        message: 'deleted a review',
+        message: 'Review has been deleted successfully',
         isItem: false,
       };
       const notification = await Notification.create(newNotification);
       user.notifs.push(notification);
       await user.save();
-      req.flash('success', 'Your review was deleted successfully.');
-      res.send('/users/' + req.params.id);
+      res.send('OK');
     } catch (err) {
       res.status(500).send(err.message);
     }
@@ -143,12 +142,9 @@ router.patch(
       const review = await Review.findById(req.params.review_id).exec();
       review.isReported = true;
       await review.save();
-      req.flash('success', 'Review reported!');
-      res.send('/users/' + req.params.id);
+      res.send('OK');
     } catch (err) {
-      console.log(err);
-      req.flash('error', err.message);
-      res.status(500).send('/');
+      res.status(500).send(err.message);
     }
   }
 );
@@ -161,12 +157,9 @@ router.patch(
       const review = await Review.findById(req.params.review_id).exec();
       review.isReported = false;
       await review.save();
-      req.flash('success', 'Review resolved!');
-      res.send('/report');
+      res.send('OK');
     } catch (err) {
-      console.log(err);
-      req.flash('error', err.message);
-      res.status(500).send('/report');
+      res.status(500).send(err.message);
     }
   }
 );
@@ -180,21 +173,26 @@ router.patch(
       if (review.upvoted(req.user.id)) {
         review.unvote(req.user.id);
         await review.save();
-        res.status(200).send(review.upvotes() - review.downvotes());
+        res
+          .status(200)
+          .json({votes: review.upvotes() - review.downvotes(), upvoted: false});
       } else if (review.downvoted(req.user.id)) {
         review.unvote(req.user.id);
         await review.save();
         review.upvote(req.user.id);
         await review.save();
-        res.status(200).send(review.upvotes() - review.downvotes());
+        res
+          .status(200)
+          .json({votes: review.upvotes() - review.downvotes(), upvoted: true});
       } else {
         review.upvote(req.user.id);
         await review.save();
-        res.status(200).send(review.upvotes() - review.downvotes());
+        res
+          .status(200)
+          .json({votes: review.upvotes() - review.downvotes(), upvoted: true});
       }
     } catch (err) {
-      console.log(err);
-      res.status(500).send('/');
+      res.status(500).send(err.message);
     }
   }
 );
@@ -208,21 +206,29 @@ router.patch(
       if (review.downvoted(req.user.id)) {
         review.unvote(req.user.id);
         await review.save();
-        res.status(200).send(review.upvotes() - review.downvotes());
-      } else if (review.upvoted(req.user.id)) {
+        res.status(200).json({
+          votes: review.upvotes() - review.downvotes(),
+          downvoted: false,
+        });
+      } else if (review.downvoted(req.user.id)) {
         review.unvote(req.user.id);
         await review.save();
         review.downvote(req.user.id);
         await review.save();
-        res.status(200).send(review.upvotes() - review.downvotes());
+        res.status(200).json({
+          votes: review.upvotes() - review.downvotes(),
+          downvoted: true,
+        });
       } else {
         review.downvote(req.user.id);
         await review.save();
-        res.status(200).send(review.upvotes() - review.downvotes());
+        res.status(200).json({
+          votes: review.upvotes() - review.downvotes(),
+          downvoted: true,
+        });
       }
     } catch (err) {
-      console.log(err);
-      res.status(500).send('/');
+      res.status(500).send(err.message);
     }
   }
 );

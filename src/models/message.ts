@@ -4,6 +4,7 @@ export interface MMessage extends mongoose.Document {
   from: {username: string; _id: string};
   to: {username: string; _id: string};
   message: string;
+  unread: boolean;
 }
 
 const chatSchema = new mongoose.Schema(
@@ -18,6 +19,10 @@ const chatSchema = new mongoose.Schema(
     },
     message: {
       type: String,
+    },
+    unread: {
+      type: Boolean,
+      default: true,
     },
   },
   {
